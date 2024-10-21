@@ -1,4 +1,4 @@
-package com.sparta.adjustment.api.user.dtos;
+package com.sparta.adjustment.api.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

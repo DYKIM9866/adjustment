@@ -2,10 +2,10 @@ package com.sparta.adjustment.domain.user.component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sparta.adjustment.api.user.dtos.GoogleLoginResponse;
-import com.sparta.adjustment.api.user.dtos.GoogleRequestAccessToken;
-import com.sparta.adjustment.api.user.dtos.SocialAuthResponse;
-import com.sparta.adjustment.api.user.dtos.SocialUserResponse;
+import com.sparta.adjustment.api.dto.response.GoogleLoginResponse;
+import com.sparta.adjustment.api.dto.request.GoogleRequestAccessToken;
+import com.sparta.adjustment.api.dto.response.SocialAuthResponse;
+import com.sparta.adjustment.api.dto.response.SocialUserResponse;
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import com.sparta.adjustment.domain.user.feign.google.GoogleAuthApi;
 import com.sparta.adjustment.domain.user.feign.google.GoogleUserApi;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Component

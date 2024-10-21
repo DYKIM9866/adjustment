@@ -1,8 +1,8 @@
 package com.sparta.adjustment.domain.user.component;
 
-import com.sparta.adjustment.api.user.dtos.SocialAuthResponse;
-import com.sparta.adjustment.api.user.dtos.SocialLoginRequest;
-import com.sparta.adjustment.api.user.dtos.SocialUserResponse;
+import com.sparta.adjustment.api.dto.response.SocialAuthResponse;
+import com.sparta.adjustment.api.dto.request.SocialLoginRequest;
+import com.sparta.adjustment.api.dto.response.SocialUserResponse;
 import com.sparta.adjustment.domain.user.User;
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import com.sparta.adjustment.domain.user.repository.UserRepository;

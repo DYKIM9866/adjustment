@@ -1,6 +1,6 @@
 package com.sparta.adjustment.domain.user.feign.google;
 
-import com.sparta.adjustment.api.user.dtos.GoogleRequestAccessToken;
+import com.sparta.adjustment.api.dto.request.GoogleRequestAccessToken;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

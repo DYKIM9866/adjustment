@@ -1,8 +1,8 @@
-package com.sparta.adjustment.api.user;
+package com.sparta.adjustment.api.controller;
 
-import com.sparta.adjustment.api.user.dtos.LoginResponse;
-import com.sparta.adjustment.api.user.dtos.SocialLoginRequest;
-import com.sparta.adjustment.api.user.usecase.SocialLoginUseCase;
+import com.sparta.adjustment.api.dto.response.LoginResponse;
+import com.sparta.adjustment.api.dto.request.SocialLoginRequest;
+import com.sparta.adjustment.usecase.SocialLoginUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

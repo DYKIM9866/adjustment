@@ -1,4 +1,4 @@
-package com.sparta.adjustment.api.user.dtos;
+package com.sparta.adjustment.api.dto.request;
 
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import jakarta.validation.constraints.NotNull;
