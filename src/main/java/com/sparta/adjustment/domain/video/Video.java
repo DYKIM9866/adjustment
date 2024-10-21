@@ -22,8 +22,8 @@ public class Video extends BaseTime {
     @Column(nullable = false)
     private Integer videoLen;
 
-    @Column
-    private String explain;
+    @Column(length = 1000)
+    private String videoExplain;
 
     @Column(nullable = false)
     private String status;
