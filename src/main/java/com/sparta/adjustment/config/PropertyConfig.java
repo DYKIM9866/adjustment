@@ -10,7 +10,7 @@ public class PropertyConfig {
     @Bean(name = "social")
     public PropertiesFactoryBean propertiesFactoryBean(){
         PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-        ClassPathResource classPathResource = new ClassPathResource("../resources/properties/*.properties");
+        ClassPathResource classPathResource = new ClassPathResource("properties/social.properties");
 
         propertiesFactoryBean.setLocation(classPathResource);
 
