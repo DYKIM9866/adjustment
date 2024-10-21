@@ -28,7 +28,5 @@ public class User extends BaseTime {
     private List<Video> myVideos;
 
     @OneToMany(mappedBy = "userId")
-    private List<VideoHistory> myVideoHistory;
-
-
+    private List<UserVideoHistory> myVideoHistory;
 }

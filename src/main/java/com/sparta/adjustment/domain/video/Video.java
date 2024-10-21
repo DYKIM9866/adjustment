@@ -29,9 +29,7 @@ public class Video extends BaseTime {
     private String status;
 
     @OneToMany(mappedBy = "videoId")
-    private List<VideoHistory> history;
+    private List<VideoHistory> videoHistories;
 
-    @OneToOne
-    @JoinColumn(name = "videoId")
-    private TotalVideoViews totalVideoViews;
+
 }

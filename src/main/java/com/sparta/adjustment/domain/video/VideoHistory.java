@@ -1,6 +1,5 @@
 package com.sparta.adjustment.domain.video;
 
-import com.sparta.adjustment.domain.user.User;
 import com.sparta.adjustment.entity.BaseTime;
 import jakarta.persistence.*;
 
@@ -10,17 +9,16 @@ public class VideoHistory extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "id", nullable = false)
-    private User userId;
+    @Column(nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "videoId", referencedColumnName = "id", nullable = false)
-    private User videoId;
+    private Video videoId;
 
     @Column(nullable = false)
-    private String status;
+    private Integer exitTiming;
 
     @Column
-    private Integer exitTiming;
+    private int adViews;
 }
