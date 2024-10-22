@@ -5,6 +5,7 @@ import com.sparta.adjustment.api.dto.request.SocialLoginRequest;
 import com.sparta.adjustment.api.dto.response.SocialUserResponse;
 import com.sparta.adjustment.domain.user.User;
 import com.sparta.adjustment.domain.user.enums.SocialType;
+import com.sparta.adjustment.domain.user.enums.UserAuth;
 import com.sparta.adjustment.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,11 +42,16 @@ public class UserLogin {
         return null;
     }
 
+    public User getUser(String email) {
+        return userRepository.findByEmail(email);
+    }
     public boolean isExist(String email) {
         User user = userRepository.findByEmail(email);
         return user == null;
     }
 
-    public void signUp(SocialUserResponse userInfo) {
+    public void signUp(SocialUserResponse userInfo, SocialLoginRequest request) {
+        User user = new User(userInfo.getEmail(), UserAuth.NORMAL, request.getSocialType());
+        userRepository.save(user);
     }
 }
