@@ -3,7 +3,7 @@ package com.sparta.adjustment.domain.user;
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import com.sparta.adjustment.domain.user.enums.UserAuth;
 import com.sparta.adjustment.domain.video.Video;
-import com.sparta.adjustment.entity.BaseTime;
+import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
 
 import java.util.List;

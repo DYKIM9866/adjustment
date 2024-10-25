@@ -45,10 +45,6 @@ public class UserLogin {
     public User getUser(String email) {
         return userRepository.findByEmail(email);
     }
-    public boolean isExist(String email) {
-        User user = userRepository.findByEmail(email);
-        return user == null;
-    }
 
     public void signUp(SocialUserResponse userInfo, SocialLoginRequest request) {
         User user = new User(userInfo.getEmail(), UserAuth.NORMAL, request.getSocialType());

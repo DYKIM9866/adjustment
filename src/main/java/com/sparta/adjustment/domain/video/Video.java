@@ -1,12 +1,14 @@
 package com.sparta.adjustment.domain.video;
 
 import com.sparta.adjustment.domain.user.User;
-import com.sparta.adjustment.entity.BaseTime;
+import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.List;
 
 @Entity
+@Getter
 public class Video extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

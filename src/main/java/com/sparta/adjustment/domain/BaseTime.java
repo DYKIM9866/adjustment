@@ -1,4 +1,4 @@
-package com.sparta.adjustment.entity;
+package com.sparta.adjustment.domain;
 
 
 import jakarta.persistence.EntityListeners;

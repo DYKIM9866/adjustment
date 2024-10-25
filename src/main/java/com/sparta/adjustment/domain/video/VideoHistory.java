@@ -1,6 +1,6 @@
 package com.sparta.adjustment.domain.video;
 
-import com.sparta.adjustment.entity.BaseTime;
+import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
 
 @Entity
