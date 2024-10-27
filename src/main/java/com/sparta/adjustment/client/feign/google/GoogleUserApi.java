@@ -1,4 +1,4 @@
-package com.sparta.adjustment.domain.user.feign.google;
+package com.sparta.adjustment.client.feign.google;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

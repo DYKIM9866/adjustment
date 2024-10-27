@@ -1,4 +1,4 @@
-package com.sparta.adjustment.domain.user.jwt;
+package com.sparta.adjustment.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
