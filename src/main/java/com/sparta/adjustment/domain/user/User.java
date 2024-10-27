@@ -26,12 +26,6 @@ public class User extends BaseTime {
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
 
-    @OneToMany(mappedBy = "publisher")
-    private List<Video> myVideos;
-
-    @OneToMany(mappedBy = "userId")
-    private List<UserVideoHistory> myVideoHistory;
-
     public User(String email, UserAuth userAuth, SocialType socialType) {
         this.email = email;
         this.socialType = socialType;

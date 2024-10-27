@@ -12,9 +12,8 @@ public class VideoHistory extends BaseTime {
     @Column(nullable = false)
     private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "videoId", referencedColumnName = "id", nullable = false)
-    private Video videoId;
+    @Column(nullable = false)
+    private Long videoId;
 
     @Column(nullable = false)
     private Integer exitTiming;

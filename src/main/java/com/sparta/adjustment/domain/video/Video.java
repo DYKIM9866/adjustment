@@ -1,11 +1,8 @@
 package com.sparta.adjustment.domain.video;
 
-import com.sparta.adjustment.domain.user.User;
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
 import lombok.Getter;
-
-import java.util.List;
 
 @Entity
 @Getter
@@ -17,9 +14,8 @@ public class Video extends BaseTime {
     @Column(nullable = false)
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="publisher", referencedColumnName = "id", nullable = false)
-    private User publisher;
+    @Column(nullable = false)
+    private Long publisher;
 
     @Column(nullable = false)
     private Integer videoLen;
@@ -30,8 +26,6 @@ public class Video extends BaseTime {
     @Column(nullable = false)
     private String status;
 
-    @OneToMany(mappedBy = "videoId")
-    private List<VideoHistory> videoHistories;
 
 
 }

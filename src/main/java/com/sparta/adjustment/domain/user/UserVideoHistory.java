@@ -8,11 +8,10 @@ public class UserVideoHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "id", nullable = false)
-    private User userId;
+    @Column(nullable = false)
+    private Long userId;
 
-    @Column
+    @Column(nullable = false)
     private Long videoId;
 
     @Column(nullable = false)
