@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class VideoRedisComponent {
 
-    private final RedisTemplate<String, Integer> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public Integer increaseWatched(Long videoId){
         Integer value = getValue(String.valueOf(videoId));
@@ -23,7 +23,7 @@ public class VideoRedisComponent {
     }
 
     public void setWatchCached(String userEmail, Long videoId){
-        setValueOne(userEmail+"+"+videoId);
+        setValueOne(userEmail+":"+videoId);
     }
 
     public Integer getWatchCached(String userEmail, Long videoId){
@@ -31,15 +31,15 @@ public class VideoRedisComponent {
     }
 
     private Integer getValue(String key){
-        ValueOperations<String, Integer> ssvo = redisTemplate.opsForValue();
-        return ssvo.get(key);
+        ValueOperations<String, Object> ssvo = redisTemplate.opsForValue();
+        return (Integer)ssvo.get(key);
     }
     private void upValue(String key){
-        ValueOperations<String, Integer> ssvo = redisTemplate.opsForValue();
+        ValueOperations<String, Object> ssvo = redisTemplate.opsForValue();
         ssvo.increment(key);
     }
     private void setValueOne(String key){
-        ValueOperations<String, Integer> ssvo = redisTemplate.opsForValue();
+        ValueOperations<String, Object> ssvo = redisTemplate.opsForValue();
         ssvo.set(key, 1);
     }
 }
