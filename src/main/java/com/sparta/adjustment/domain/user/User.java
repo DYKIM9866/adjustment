@@ -5,11 +5,14 @@ import com.sparta.adjustment.domain.user.enums.UserAuth;
 import com.sparta.adjustment.domain.video.Video;
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
+@RequiredArgsConstructor
 public class User extends BaseTime {
 
     @Id
