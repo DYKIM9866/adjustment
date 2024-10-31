@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  adjustment-postgres:                #--name adjustment-postgres
+    image: postgres:13                # 이미지 사용
+    container_name: adjustment-postgres
+    environment:
+      POSTGRES_USER: dyuser
+      POSTGRES_PASSWORD: dyuser
+      POSTGRES_DB: adjustment
+    ports:
+      - 5432:5432
+    volumes:
+      - //c/dev_study/sparta/project/adjustment-postgres/data:/var/lib/postgres/data
+      - ../adjustment-postgres/config/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    restart: unless-stopped           # 명시적으로 중지하지 않는 한 다시시작
+
+  adjustment-redis:                   # --name adjustment-redis
+    image: redis:7.4-alpine           # 이미지 사용
+    container_name: adjustment-redis
+    ports:                            # 포트 6379로 open
+      - 6379:6379
+    volumes:
+      - ../adjustment-redis/data:/data
+    command:
+      - "redis-server"
+    restart: unless-stopped
+
+  adjustment:                         # --name adjustment
+    build: .                          # 현재 프로젝트 폴더 빌드
+    container_name: adjustment
+    ports:
+      - 8080:8080
+    environment:                      # 환경변수 주입
+      DB_URL: jdbc:postgresql://adjustment-postgres:5432/adjustment
+      REDIS_URL: adjustment-redis:6379
+    depends_on:                       # adjustment-redis, adjustment-postgres 종료 후에 실행
+      - adjustment-redis
+      - adjustment-postgres
+    restart: unless-stopped
+
