@@ -32,8 +32,14 @@ services:
     ports:
       - 8080:8080
     environment:                      # 환경변수 주입
-      DB_URL: jdbc:postgresql://adjustment-postgres:5432/adjustment
-      REDIS_URL: adjustment-redis:6379
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: adjustment-postgres
+      DB_PORT: 5432
+      DB_NAME: adjustment
+      DB_USERNAME: dyuser
+      DB_PASSWORD: dyuser
+      REDIS_HOST: adjustment-redis
+      REDIS_PORT: 6379
     depends_on:                       # adjustment-redis, adjustment-postgres 종료 후에 실행
       - adjustment-redis
       - adjustment-postgres
