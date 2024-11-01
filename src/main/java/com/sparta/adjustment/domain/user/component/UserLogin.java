@@ -21,6 +21,7 @@ public class UserLogin {
 
     private final List<SocialLogin> socialLogins;
     private final UserRepository userRepository;
+    private final UserComponent userComponent;
 
     public SocialUserResponse getUserInfo(SocialLoginRequest request) {
         SocialLogin socialLogin = getLogin(request.getSocialType())
@@ -43,7 +44,7 @@ public class UserLogin {
     }
 
     public User getUser(String email) {
-        return userRepository.findByEmail(email);
+        return userComponent.getUser(email);
     }
 
     public void signUp(SocialUserResponse userInfo, SocialLoginRequest request) {
