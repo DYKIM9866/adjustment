@@ -13,4 +13,7 @@ public class AdVideo {
 
     @Column
     private Integer adVideoLen;
+
+    @Column
+    private Boolean deleteAt;
 }

@@ -6,13 +6,14 @@ import com.sparta.adjustment.domain.user.UserVideoHistory;
 import com.sparta.adjustment.domain.user.component.UserComponent;
 import com.sparta.adjustment.domain.user.component.UserHistoryComponent;
 import com.sparta.adjustment.domain.user.enums.ViewingStatus;
+import com.sparta.adjustment.domain.video.AdVideo;
 import com.sparta.adjustment.domain.video.Video;
+import com.sparta.adjustment.domain.video.component.AdVideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoRedisComponent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -23,8 +24,10 @@ public class VideoStreamingUseCase {
     private final VideoRedisComponent videoRedisComponent;
     private final UserComponent userComponent;
     private final UserHistoryComponent userHistoryComponent;
+    private final AdVideoComponent adVideoComponent;
 
-    public VideoStreamingResponse watchVideo(Long videoId, Long userId) {
+
+    public VideoStreamingResponse<Video> watchVideo(Long videoId, Long userId) {
 
         User user = userComponent.getUser(userId);
         Video video = videoComponent.getVideo(videoId);
@@ -53,8 +56,17 @@ public class VideoStreamingUseCase {
 
         userHistoryComponent.saveUserVideoHistory(userVideoHistory);
 
-        return VideoStreamingResponse.builder()
-                .video(video)
-                .build();
+        return new VideoStreamingResponse<>(video);
+    }
+
+    public VideoStreamingResponse<AdVideo> watchAd(Long videoId, Long userId, Integer adVideoLen) {
+        AdVideo adVideo = adVideoComponent.getAdVideo(adVideoLen);
+        UserVideoHistory userVideoHistory
+                = userHistoryComponent.getUserVideoHistory(userId, videoId)
+                .orElseThrow(() -> new RuntimeException("기록이 조회되지 않습니다."));
+
+        userVideoHistory.setAdViews(userVideoHistory.getAdViews() + 1);
+
+        return new VideoStreamingResponse<>(adVideo);
     }
 }
