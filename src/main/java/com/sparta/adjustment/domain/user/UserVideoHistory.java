@@ -1,9 +1,17 @@
 package com.sparta.adjustment.domain.user;
 
+import com.sparta.adjustment.domain.BaseTime;
+import com.sparta.adjustment.domain.user.enums.ViewingStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
-public class UserVideoHistory {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserVideoHistory extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,6 +24,12 @@ public class UserVideoHistory {
 
     @Column(nullable = false)
     private Integer exitTiming;
+
+    @Column
+    private ViewingStatus viewingStatus;
+
+    @Column
+    private Boolean views;
 
     @Column
     private int adViews;

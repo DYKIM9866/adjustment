@@ -1,13 +1,19 @@
 package com.sparta.adjustment.usecase;
 
-import com.sparta.adjustment.api.dto.request.VideoStreamingRequest;
+import com.sparta.adjustment.api.dto.response.VideoStreamingResponse;
+import com.sparta.adjustment.domain.user.User;
+import com.sparta.adjustment.domain.user.UserVideoHistory;
+import com.sparta.adjustment.domain.user.component.UserComponent;
 import com.sparta.adjustment.domain.user.component.UserHistoryComponent;
+import com.sparta.adjustment.domain.user.enums.ViewingStatus;
 import com.sparta.adjustment.domain.video.Video;
 import com.sparta.adjustment.domain.video.component.VideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoRedisComponent;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -15,28 +21,40 @@ public class VideoStreamingUseCase {
 
     private final VideoComponent videoComponent;
     private final VideoRedisComponent videoRedisComponent;
+    private final UserComponent userComponent;
     private final UserHistoryComponent userHistoryComponent;
 
-    public void watchVideo(Long videoId, VideoStreamingRequest request) {
-        //비디오 객체 가져오기
-        Video video = videoComponent.getVideo(videoId)
-                .orElseThrow(()-> new EntityNotFoundException("해당 비디오가 존재 하지 않습니다."));
+    public VideoStreamingResponse watchVideo(Long videoId, Long userId) {
+
+        User user = userComponent.getUser(userId);
+        Video video = videoComponent.getVideo(videoId);
         //30초 이내 캐시 확인
-        Integer watchCached = videoRedisComponent.getWatchCached(request.getUserEmail(), videoId);
+        Integer watchCached = videoRedisComponent.getWatchCached(userId, videoId);
 
         //게시자 아니고 && 어뷰징 아니라면 조회수 증가
-        if(!video.getPublisher().equals(request.getUserEmail())
+        boolean isViews = false;
+        if(!video.getPublisher().equals(userId)
                 && watchCached == null){
             videoRedisComponent.increaseWatched(videoId);
+            isViews = true;
         }
 
         //재생 기록이 있는지 조회
-        /**
-         * 관계를 맺어둔 엔티티에서 조회해서 로직상에서 찾아서 하는게 맞는지
-         * 쿼리를 한번 더 던지는게 맞는지
-         */
+        Optional<UserVideoHistory> userVideoHistories
+                = userHistoryComponent.getUserVideoHistory(userId, videoId);
 
-        //기록 생성 후 비디오 리턴
-        return;
+        //기록 생성 및 저장
+        UserVideoHistory userVideoHistory = UserVideoHistory.builder()
+                .userId(userId)
+                .videoId(videoId)
+                .views(isViews)
+                .viewingStatus(ViewingStatus.WATCHING)
+                .build();
+
+        userHistoryComponent.saveUserVideoHistory(userVideoHistory);
+
+        return VideoStreamingResponse.builder()
+                .video(video)
+                .build();
     }
 }

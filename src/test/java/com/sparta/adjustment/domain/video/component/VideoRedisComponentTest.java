@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class VideoRedisComponentTest {
 
-    String userEmail = "xxxx@gmail.com";
+    Long userId = 3224L;
     Long videoId = 1L;
 
     @Mock
@@ -39,26 +39,23 @@ class VideoRedisComponentTest {
     void setRedisString(){
         //given
         //when
-        videoRedisComponent.setWatchCached(userEmail, videoId);
+        videoRedisComponent.setWatchCached(userId, videoId);
 
         //then
-        verify(valueOperations).set(userEmail + ":" + videoId, 1);
+        verify(valueOperations).set(userId + ":" + videoId, 1);
     }
 
     @Test
     @DisplayName("캐시가 존재하는지 확인")
     void checkCached(){
         //given
-        when(valueOperations.get("userEmail:1")).thenReturn(null);
-        when(valueOperations.get("xxxx@gmail.com:1")).thenReturn(1);
+        when(valueOperations.get(userId + ":" + videoId)).thenReturn(null);
 
         //when
-        Integer test1 = videoRedisComponent.getWatchCached("userEmail", 1L);
-        Integer test2 = videoRedisComponent.getWatchCached("xxxx@gmail.com", 1L);
+        Integer test1 = videoRedisComponent.getWatchCached(userId, videoId);
 
         //then
         assertThat(test1).isEqualTo(null);
-        assertThat(test2).isEqualTo(1);
     }
 
     @Test

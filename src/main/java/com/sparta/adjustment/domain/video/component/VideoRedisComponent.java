@@ -22,12 +22,12 @@ public class VideoRedisComponent {
         }
     }
 
-    public void setWatchCached(String userEmail, Long videoId){
-        setValueOne(userEmail+":"+videoId);
+    public void setWatchCached(Long userId, Long videoId){
+        setValueOne(userId+":"+videoId);
     }
 
-    public Integer getWatchCached(String userEmail, Long videoId){
-        return getValue(userEmail +":" +videoId);
+    public Integer getWatchCached(Long userId, Long videoId){
+        return getValue(userId +":" +videoId);
     }
 
     private Integer getValue(String key){

@@ -6,5 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class VideoStreamingRequest {
+    private Long userId;
     private String userEmail;
 }
