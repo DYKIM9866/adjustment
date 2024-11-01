@@ -1,6 +1,7 @@
 package com.sparta.adjustment.domain.video;
 
 import com.sparta.adjustment.domain.BaseTime;
+import com.sparta.adjustment.domain.video.enums.VideoStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -24,7 +25,7 @@ public class Video extends BaseTime {
     private String videoExplain;
 
     @Column(nullable = false)
-    private String status;
+    private VideoStatus status;
 
 
 
