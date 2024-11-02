@@ -11,16 +11,25 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class VideoController {
 
-    private final VideoStreamingUseCase watchVideoUseCase;
+    private final VideoStreamingUseCase videoStreamingUseCase;
 
     @GetMapping("/{videoId}/{userId}")
-    public CommonApiResponse<VideoStreamingResponse> watchVideo(@PathVariable Long videoId
-                           , @PathVariable Long userId){
-        return CommonApiResponse.success(watchVideoUseCase.watchVideo(videoId, userId));
+    public CommonApiResponse<VideoStreamingResponse<?>> watchVideo(@PathVariable Long videoId,
+                                                                       @PathVariable Long userId){
+        return CommonApiResponse.success(videoStreamingUseCase.watchVideo(videoId, userId));
     }
 
-    @PatchMapping("/{videoId}")
-    public void finishVideo(@PathVariable Long videoId){
+    @PatchMapping("/{videoId}/{userId}/{adVideoLen}")
+    public CommonApiResponse<VideoStreamingResponse<?>> watchAd(@PathVariable Long videoId,
+                                        @PathVariable Long userId,
+                                        @PathVariable Integer adVideoLen){
+        return CommonApiResponse.success(videoStreamingUseCase.watchAd(videoId, userId, adVideoLen));
+    }
 
+    @PatchMapping("/{videoId}/{userId}")
+    public void finishVideo(@PathVariable Long videoId,
+                            @PathVariable Long userId,
+                            @RequestParam Integer exitTiming){
+        videoStreamingUseCase.finishVideo(videoId, userId, exitTiming);
     }
 }

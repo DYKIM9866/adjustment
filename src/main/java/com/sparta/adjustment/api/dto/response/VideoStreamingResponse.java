@@ -5,8 +5,16 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
-public class VideoStreamingResponse {
+public class VideoStreamingResponse<T> {
     private Integer exitTiming;
-    private Video video;
+    private T video;
+
+    public VideoStreamingResponse(T video) {
+        this.video = video;
+    }
+
+    public VideoStreamingResponse(Integer exitTiming, T video) {
+        this.exitTiming = exitTiming;
+        this.video = video;
+    }
 }

@@ -11,6 +11,7 @@ import com.sparta.adjustment.domain.video.Video;
 import com.sparta.adjustment.domain.video.component.AdVideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoRedisComponent;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -68,5 +69,20 @@ public class VideoStreamingUseCase {
         userVideoHistory.setAdViews(userVideoHistory.getAdViews() + 1);
 
         return new VideoStreamingResponse<>(adVideo);
+    }
+
+    public void finishVideo(Long videoId, Long userId, Integer exitTiming) {
+        UserVideoHistory userVideoHistory
+                = userHistoryComponent.getUserVideoHistory(userId, videoId)
+                .orElseThrow(()-> new EntityNotFoundException("기록이 조회되지 않아 기록에 실패했습니다."));
+
+        userVideoHistory.setExitTiming(exitTiming);
+        if(exitTiming == 0){
+            userVideoHistory.setViewingStatus(ViewingStatus.COMPLETED);
+        }else{
+            userVideoHistory.setViewingStatus(ViewingStatus.UNWATCHED);
+        }
+
+        videoRedisComponent.setWatchCached(userId, videoId, 30);
     }
 }
