@@ -2,23 +2,22 @@ package com.sparta.adjustment.domain.history;
 
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Setter
 @Getter
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserVideoHistory extends BaseTime {
-    @Id
-    private Long userId;
-
-    @Id
-    private Long videoId;
+    @EmbeddedId
+    private UserVideoId id;
 
     @Column
-    private Integer exitTiming;
+    private int exitTiming;
 }

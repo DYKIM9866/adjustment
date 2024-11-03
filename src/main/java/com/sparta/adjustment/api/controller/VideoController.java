@@ -14,17 +14,17 @@ public class VideoController {
     private final VideoStreamingUseCase videoStreamingUseCase;
 
     @GetMapping("/{videoId}/{userId}")
-    public CommonApiResponse<VideoStreamingResponse<?>> watchVideo(@PathVariable Long videoId,
+    public CommonApiResponse<VideoStreamingResponse> watchVideo(@PathVariable Long videoId,
                                                                        @PathVariable Long userId){
         return CommonApiResponse.success(videoStreamingUseCase.watchVideo(videoId, userId));
     }
 
-    @PatchMapping("/{videoId}/{userId}/{adVideoLen}")
-    public CommonApiResponse<VideoStreamingResponse<?>> watchAd(@PathVariable Long videoId,
-                                        @PathVariable Long userId,
-                                        @PathVariable Integer adVideoLen){
-        return CommonApiResponse.success(videoStreamingUseCase.watchAd(videoId, userId, adVideoLen));
-    }
+//    @PatchMapping("/{videoId}/{userId}/{adVideoLen}")
+//    public CommonApiResponse<VideoStreamingResponse<?>> watchAd(@PathVariable Long videoId,
+//                                        @PathVariable Long userId,
+//                                        @PathVariable Integer adVideoLen){
+//        return CommonApiResponse.success(videoStreamingUseCase.watchAd(videoId, userId, adVideoLen));
+//    }
 
     @PatchMapping("/{videoId}/{userId}")
     public void finishVideo(@PathVariable Long videoId,

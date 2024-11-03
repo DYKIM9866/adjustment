@@ -5,50 +5,24 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 @RequiredArgsConstructor
 public class VideoRedisComponent {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ValueOperations<String, Object> ops = redisTemplate.opsForValue();
 
-    public Integer increaseWatched(Long videoId){
-        Integer value = getValue(String.valueOf(videoId));
-        if(value == null){
-            setValueOne(String.valueOf(videoId), 0);
-            return 1;
-        }else{
-            upValue(String.valueOf(videoId));
-            return value+1;
-        }
+    public Object getCached(String key) {
+        return ops.get(key);
     }
 
-    public void setWatchCached(Long userId, Long videoId){
-        setValueOne(userId+":"+videoId, 0);
+    public void increaseCached(String key) {
+        ops.increment(key);
     }
 
-    public void setWatchCached(Long userId, Long videoId, int expire){
-        setValueOne(userId+":"+videoId, expire);
-    }
-
-    public Integer getWatchCached(Long userId, Long videoId){
-        return getValue(userId +":" +videoId);
-    }
-
-    private Integer getValue(String key){
-        ValueOperations<String, Object> ssvo = redisTemplate.opsForValue();
-        return (Integer)ssvo.get(key);
-    }
-    private void upValue(String key){
-        ValueOperations<String, Object> ssvo = redisTemplate.opsForValue();
-        ssvo.increment(key);
-    }
-    private void setValueOne(String key, int expire){
-        ValueOperations<String, Object> ssvo = redisTemplate.opsForValue();
-        if(expire != 0){
-            ssvo.set(key, 1, expire);
-        }else{
-            ssvo.set(key, 1);
-        }
-
+    public void setCached(String key, Object value, int time) {
+        ops.set(key, value, time, TimeUnit.SECONDS);
     }
 }
