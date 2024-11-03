@@ -1,14 +1,10 @@
 package com.sparta.adjustment.domain.user;
 
+import com.sparta.adjustment.domain.BaseTime;
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import com.sparta.adjustment.domain.user.enums.UserAuth;
-import com.sparta.adjustment.domain.video.Video;
-import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -23,6 +19,7 @@ public class User extends BaseTime {
     private String email;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserAuth auth;
 
     @Column

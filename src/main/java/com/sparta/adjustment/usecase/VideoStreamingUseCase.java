@@ -2,13 +2,13 @@ package com.sparta.adjustment.usecase;
 
 import com.sparta.adjustment.api.dto.response.VideoStreamingResponse;
 import com.sparta.adjustment.domain.user.User;
-import com.sparta.adjustment.domain.user.UserVideoHistory;
+import com.sparta.adjustment.domain.history.UserVideoHistory;
 import com.sparta.adjustment.domain.user.component.UserComponent;
-import com.sparta.adjustment.domain.user.component.UserHistoryComponent;
-import com.sparta.adjustment.domain.user.enums.ViewingStatus;
-import com.sparta.adjustment.domain.video.AdVideo;
+import com.sparta.adjustment.domain.history.component.UserHistoryComponent;
+import com.sparta.adjustment.domain.history.enums.ViewingStatus;
+import com.sparta.adjustment.domain.adVideo.AdVideo;
 import com.sparta.adjustment.domain.video.Video;
-import com.sparta.adjustment.domain.video.component.AdVideoComponent;
+import com.sparta.adjustment.domain.adVideo.component.AdVideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoRedisComponent;
 import jakarta.persistence.EntityNotFoundException;

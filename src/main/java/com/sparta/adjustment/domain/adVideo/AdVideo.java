@@ -1,4 +1,4 @@
-package com.sparta.adjustment.domain.video;
+package com.sparta.adjustment.domain.adVideo;
 
 import jakarta.persistence.*;
 

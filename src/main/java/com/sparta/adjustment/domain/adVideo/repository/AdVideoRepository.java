@@ -1,12 +1,10 @@
-package com.sparta.adjustment.domain.video.repository;
+package com.sparta.adjustment.domain.adVideo.repository;
 
-import com.sparta.adjustment.domain.video.AdVideo;
+import com.sparta.adjustment.domain.adVideo.AdVideo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface AdVideoRepository extends JpaRepository<AdVideo, Long> {

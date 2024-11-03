@@ -1,7 +1,7 @@
-package com.sparta.adjustment.domain.video.component;
+package com.sparta.adjustment.domain.adVideo.component;
 
-import com.sparta.adjustment.domain.video.AdVideo;
-import com.sparta.adjustment.domain.video.repository.AdVideoRepository;
+import com.sparta.adjustment.domain.adVideo.AdVideo;
+import com.sparta.adjustment.domain.adVideo.repository.AdVideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

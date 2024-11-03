@@ -1,6 +1,6 @@
-package com.sparta.adjustment.domain.user.component;
+package com.sparta.adjustment.domain.history.component;
 
-import com.sparta.adjustment.domain.user.UserVideoHistory;
+import com.sparta.adjustment.domain.history.UserVideoHistory;
 import com.sparta.adjustment.domain.user.repository.UserVideoHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

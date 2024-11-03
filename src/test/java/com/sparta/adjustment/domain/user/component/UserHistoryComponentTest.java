@@ -1,13 +1,13 @@
 package com.sparta.adjustment.domain.user.component;
 
-import com.sparta.adjustment.domain.user.UserVideoHistory;
+import com.sparta.adjustment.domain.history.UserVideoHistory;
+import com.sparta.adjustment.domain.history.component.UserHistoryComponent;
 import com.sparta.adjustment.domain.user.repository.UserVideoHistoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;

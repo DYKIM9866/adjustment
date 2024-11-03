@@ -1,10 +1,10 @@
-package com.sparta.adjustment.domain.video;
+package com.sparta.adjustment.domain.history;
 
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
 
 @Entity
-public class VideoHistory extends BaseTime {
+public class UserVideoCheckHistory extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,6 +18,9 @@ public class VideoHistory extends BaseTime {
     @Column(nullable = false)
     private Integer exitTiming;
 
-    @Column
-    private int adViews;
+    @Column(nullable = false)
+    private Integer adViews;
+
+    @Column(nullable = false)
+    private Integer viewingTime;
 }
