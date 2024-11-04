@@ -2,12 +2,12 @@ package com.sparta.adjustment.domain.history;
 
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Builder
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserVideoCheckHistory extends BaseTime {

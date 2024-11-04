@@ -5,6 +5,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -18,11 +19,15 @@ public class VideoRedisComponent {
         return ops.get(key);
     }
 
-    public void increaseCached(String key) {
-        ops.increment(key);
+    public boolean setCached(String key, Object value, int time) {
+        return ops.setIfAbsent(key, value, time, TimeUnit.SECONDS);
     }
 
-    public void setCached(String key, Object value, int time) {
-        ops.set(key, value, time, TimeUnit.SECONDS);
+    public Object increaseCached(String key) {
+        return ops.increment(key);
+    }
+
+    public Object decreaseCache(String key) {
+        return ops.decrement(key);
     }
 }

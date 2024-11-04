@@ -11,7 +11,7 @@ public class AdVideoComponent {
 
     private final AdVideoRepository adVideoRepository;
 
-    public AdVideo getAdVideo(Integer adVideoLen) {
-        return adVideoRepository.findRandomOneByLength(adVideoLen);
+    public AdVideo getAdVideoByCategory(String category) {
+        return adVideoRepository.findRandomOneByCategory(category);
     }
 }

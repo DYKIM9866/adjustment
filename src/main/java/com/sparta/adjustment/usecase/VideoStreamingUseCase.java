@@ -1,6 +1,9 @@
 package com.sparta.adjustment.usecase;
 
+import com.sparta.adjustment.api.dto.request.VideoStreamingRequest;
+import com.sparta.adjustment.api.dto.response.AdVideoResponse;
 import com.sparta.adjustment.api.dto.response.VideoStreamingResponse;
+import com.sparta.adjustment.domain.adVideo.AdVideo;
 import com.sparta.adjustment.domain.history.UserVideoCheckHistory;
 import com.sparta.adjustment.domain.history.UserVideoHistory;
 import com.sparta.adjustment.domain.history.UserVideoId;
@@ -14,12 +17,16 @@ import com.sparta.adjustment.domain.video.component.VideoRedisComponent;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class VideoStreamingUseCase {
     private final static String WATCHED = "watched";
     private final static String VIEWS = "views";
+
 
     private final VideoComponent videoComponent;
     private final VideoRedisComponent videoRedisComponent;
@@ -67,6 +74,38 @@ public class VideoStreamingUseCase {
         return new VideoStreamingResponse(userVideoHistories.getExitTiming(), video);
     }
 
+    @Transactional
+    public void finishVideo(Long videoId, VideoStreamingRequest request) {
+        UserVideoCheckHistory checkHistory
+                = historyComponent.getUserVideoCheckHistory(videoId, request.getUserId());
+        UserVideoHistory userVideoHistory
+                = historyComponent.getUserVideoHistory(new UserVideoId(request.getUserId(), videoId))
+                    .orElse(null);
+        checkHistory.setViewingTime(request.getViewingTime());
+        checkHistory.setExitTiming(request.getExitTiming());
+        if(userVideoHistory != null){
+            userVideoHistory.setExitTiming(request.getExitTiming());
+        }
+
+        Integer cached = (Integer) videoRedisComponent.getCached(WATCHED + videoId + request.getUserId());
+        if(cached != null && cached > 1){
+            videoRedisComponent.decreaseCache(WATCHED + videoId + request.getUserId());
+        }else{
+            videoRedisComponent.setCached(WATCHED + videoId + request.getUserId(), 1, 30);
+        }
+
+    }
+
+    public AdVideoResponse getAdVideo(String category) {
+        return new AdVideoResponse(adVideoComponent.getAdVideoByCategory(category));
+    }
+
+
+    public void finishAdVideo(Long videoId, VideoStreamingRequest request) {
+        UserVideoCheckHistory checkHistory
+                = historyComponent.getUserVideoCheckHistory(videoId, request.getUserId());
+        checkHistory.setAdViews(checkHistory.getAdViews()+1);
+    }
 //    public VideoStreamingResponse<AdVideo> watchAd(Long videoId, Long userId, Integer adVideoLen) {
 //        AdVideo adVideo = adVideoComponent.getAdVideo(adVideoLen);
 //        UserVideoHistory userVideoHistory
@@ -76,15 +115,8 @@ public class VideoStreamingUseCase {
 //        userVideoHistory.setAdViews(userVideoHistory.getAdViews() + 1);
 //
 //        return new VideoStreamingResponse<>(adVideo);
+
 //    }
 
-    public void finishVideo(Long videoId, Long userId, Integer exitTiming) {
-        UserVideoId userVideoId = new UserVideoId(userId, videoId);
-        UserVideoHistory userVideoHistory
-                = historyComponent.getUserVideoHistory(userVideoId)
-                .orElseThrow(()-> new EntityNotFoundException("기록이 조회되지 않아 기록에 실패했습니다."));
 
-
-        videoRedisComponent.setCached(WATCHED + videoId + userId, 1, 30);
-    }
 }

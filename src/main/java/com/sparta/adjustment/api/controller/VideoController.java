@@ -1,5 +1,7 @@
 package com.sparta.adjustment.api.controller;
 
+import com.sparta.adjustment.api.dto.request.VideoStreamingRequest;
+import com.sparta.adjustment.api.dto.response.AdVideoResponse;
 import com.sparta.adjustment.api.dto.response.VideoStreamingResponse;
 import com.sparta.adjustment.api.utils.CommonApiResponse;
 import com.sparta.adjustment.usecase.VideoStreamingUseCase;
@@ -13,10 +15,25 @@ public class VideoController {
 
     private final VideoStreamingUseCase videoStreamingUseCase;
 
-    @GetMapping("/{videoId}/{userId}")
-    public CommonApiResponse<VideoStreamingResponse> watchVideo(@PathVariable Long videoId,
-                                                                       @PathVariable Long userId){
-        return CommonApiResponse.success(videoStreamingUseCase.watchVideo(videoId, userId));
+    @GetMapping("/{videoId}")
+    public CommonApiResponse<VideoStreamingResponse> getVideo(@PathVariable Long videoId,
+                                                              @RequestBody VideoStreamingRequest request){
+        return CommonApiResponse.success(videoStreamingUseCase.watchVideo(videoId, request.getUserId()));
+    }
+    @PatchMapping("/{videoId}")
+    public void finishVideo(@PathVariable Long videoId,
+                            @RequestBody VideoStreamingRequest request){
+        videoStreamingUseCase.finishVideo(videoId, request);
+    }
+
+    @GetMapping("/ad")
+    public CommonApiResponse<AdVideoResponse> getAdVideo(@RequestParam String category){
+        return CommonApiResponse.success(videoStreamingUseCase.getAdVideo(category));
+    }
+    @PatchMapping("/ad/{videoId}/{userId}")
+    public void finishAdVideo(@PathVariable Long videoId,
+                              @RequestBody VideoStreamingRequest request){
+        videoStreamingUseCase.finishAdVideo(videoId, request);
     }
 
 //    @PatchMapping("/{videoId}/{userId}/{adVideoLen}")
@@ -26,10 +43,5 @@ public class VideoController {
 //        return CommonApiResponse.success(videoStreamingUseCase.watchAd(videoId, userId, adVideoLen));
 //    }
 
-    @PatchMapping("/{videoId}/{userId}")
-    public void finishVideo(@PathVariable Long videoId,
-                            @PathVariable Long userId,
-                            @RequestParam Integer exitTiming){
-        videoStreamingUseCase.finishVideo(videoId, userId, exitTiming);
-    }
+
 }
