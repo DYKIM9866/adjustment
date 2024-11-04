@@ -6,10 +6,12 @@ import jakarta.persistence.*;
 
 @Entity
 public class Adjustment extends BaseTime {
-
     @Id
+    private Long id;
+
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="videoId", referencedColumnName = "adjustment")
+    @JoinColumn(name = "id")
+    @MapsId
     private Video video;
 
     @Column(nullable = false)
