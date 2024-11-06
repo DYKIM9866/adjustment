@@ -3,23 +3,17 @@ package com.sparta.adjustment.usecase;
 import com.sparta.adjustment.api.dto.request.VideoStreamingRequest;
 import com.sparta.adjustment.api.dto.response.AdVideoResponse;
 import com.sparta.adjustment.api.dto.response.VideoStreamingResponse;
-import com.sparta.adjustment.domain.adVideo.AdVideo;
+import com.sparta.adjustment.domain.adVideo.component.AdVideoComponent;
 import com.sparta.adjustment.domain.history.UserVideoCheckHistory;
 import com.sparta.adjustment.domain.history.UserVideoHistory;
 import com.sparta.adjustment.domain.history.UserVideoId;
-import com.sparta.adjustment.domain.user.component.UserComponent;
 import com.sparta.adjustment.domain.history.component.HistoryComponent;
-import com.sparta.adjustment.domain.history.enums.ViewingStatus;
 import com.sparta.adjustment.domain.video.Video;
-import com.sparta.adjustment.domain.adVideo.component.AdVideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoComponent;
 import com.sparta.adjustment.domain.video.component.VideoRedisComponent;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -27,10 +21,8 @@ public class VideoStreamingUseCase {
     private final static String WATCHED = "watched";
     private final static String VIEWS = "views";
 
-
     private final VideoComponent videoComponent;
     private final VideoRedisComponent videoRedisComponent;
-    private final UserComponent userComponent;
     private final HistoryComponent historyComponent;
     private final AdVideoComponent adVideoComponent;
 
@@ -73,7 +65,6 @@ public class VideoStreamingUseCase {
 
         return new VideoStreamingResponse(userVideoHistories.getExitTiming(), video);
     }
-
     @Transactional
     public void finishVideo(Long videoId, VideoStreamingRequest request) {
         UserVideoCheckHistory checkHistory
@@ -95,28 +86,12 @@ public class VideoStreamingUseCase {
         }
 
     }
-
     public AdVideoResponse getAdVideo(String category) {
         return new AdVideoResponse(adVideoComponent.getAdVideoByCategory(category));
     }
-
-
     public void finishAdVideo(Long videoId, VideoStreamingRequest request) {
         UserVideoCheckHistory checkHistory
                 = historyComponent.getUserVideoCheckHistory(videoId, request.getUserId());
         checkHistory.setAdViews(checkHistory.getAdViews()+1);
     }
-//    public VideoStreamingResponse<AdVideo> watchAd(Long videoId, Long userId, Integer adVideoLen) {
-//        AdVideo adVideo = adVideoComponent.getAdVideo(adVideoLen);
-//        UserVideoHistory userVideoHistory
-//                = historyComponent.getUserVideoHistory(userId, videoId)
-//                .orElseThrow(() -> new RuntimeException("기록이 조회되지 않습니다."));
-//
-//        userVideoHistory.setAdViews(userVideoHistory.getAdViews() + 1);
-//
-//        return new VideoStreamingResponse<>(adVideo);
-
-//    }
-
-
 }

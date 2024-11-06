@@ -2,10 +2,16 @@ package com.sparta.adjustment.domain.adjustment;
 
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Builder
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Aggregation extends BaseTime {
 
     @Id
@@ -16,7 +22,7 @@ public class Aggregation extends BaseTime {
     private Long videoId;
 
     @Column(nullable = false)
-    private Long videoAmount;
+    private Long viewsAmount;
 
     @Column(nullable = false)
     private Long adAmount;
@@ -28,5 +34,6 @@ public class Aggregation extends BaseTime {
     private Long adViews;
 
     @Column(nullable = false)
-    private LocalDateTime referenceDate;
+    private Long viewingTime;
+
 }

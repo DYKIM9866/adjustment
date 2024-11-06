@@ -3,8 +3,12 @@ package com.sparta.adjustment.domain.adjustment;
 import com.sparta.adjustment.domain.BaseTime;
 import com.sparta.adjustment.domain.video.Video;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class Adjustment extends BaseTime {
     @Id
     private Long id;
@@ -24,7 +28,7 @@ public class Adjustment extends BaseTime {
     private Long totalViews;
 
     @Column(nullable = false)
-    private Long adViews;
+    private Long totalAdViews;
 
     @Column(nullable = false)
     private Long totalPlayTime;
