@@ -2,14 +2,12 @@ package com.sparta.adjustment.domain.adjustment;
 
 import com.sparta.adjustment.domain.BaseTime;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Builder
 @Getter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Aggregation extends BaseTime {
