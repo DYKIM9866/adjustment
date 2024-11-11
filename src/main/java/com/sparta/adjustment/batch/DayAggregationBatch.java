@@ -1,11 +1,12 @@
 package com.sparta.adjustment.batch;
 
+import com.sparta.adjustment.batch.faultTolerant.DayAggregationSkipPolicy;
 import com.sparta.adjustment.batch.processor.CreateAggregationProcessor;
 import com.sparta.adjustment.domain.adjustment.Adjustment;
 import com.sparta.adjustment.domain.adjustment.Aggregation;
+import feign.RetryableException;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -33,7 +34,6 @@ import javax.sql.DataSource;
 import java.util.Collections;
 
 
-@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class DayAggregationBatch extends DefaultBatchConfiguration {
@@ -49,50 +49,57 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
 
     @Bean
     public Job dayAggregationJob(JobRepository jobRepository,
-                                 Step step1,
-                                 Step step2){
+                                 Step checkHistoryForCreateAggregation,
+                                 Step checkAggregationForUpdateAdjustment){
         return new JobBuilder("dayAggregationJob", jobRepository)
-                .start(step1)
-                .next(step2)
+                .start(checkHistoryForCreateAggregation)
+                .next(checkAggregationForUpdateAdjustment)
                 .build();
     }
 
     @Bean
     public Job testStep1Job(JobRepository jobRepository){
         return new JobBuilder("step1", jobRepository)
-                .start(step1((jobRepository)))
+                .start(checkHistoryForCreateAggregation((jobRepository)))
                 .build();
     }
     @Bean
     public Job testStep2Job(JobRepository jobRepository){
         return new JobBuilder("step2", jobRepository)
-                .start(step2((jobRepository)))
+                .start(checkAggregationForUpdateAdjustment((jobRepository)))
                 .build();
     }
 
     @Bean
-    public Step step1(JobRepository jobRepository){
-        log.debug("DayAggregationBatch step1 start");
+    public Step checkHistoryForCreateAggregation(JobRepository jobRepository){
         return new StepBuilder("step1", jobRepository)
                 .<Adjustment, Aggregation> chunk(100, getTransactionManager())
                 .reader(adjustmentJdbcReader())
                 .processor(processor(null))
                 .writer(writer())
+                .faultTolerant()
+                .retry(RetryableException.class)
+                .retryLimit(3)
+                .skipPolicy(new DayAggregationSkipPolicy())
                 .build();
     }
 
+
     @Bean
-    public Step step2(JobRepository jobRepository){
+    public Step checkAggregationForUpdateAdjustment(JobRepository jobRepository){
         return new StepBuilder("step2", jobRepository)
                 .<Aggregation, Aggregation> chunk(100, getTransactionManager())
                 .reader(aggregationJpaReader(null))
                 .writer(adjustmentWriter())
+                .faultTolerant()
+                .retry(RetryableException.class)
+                .retryLimit(3)
+                .skipPolicy(new DayAggregationSkipPolicy())
                 .build();
     }
 
     @Bean
     public JdbcPagingItemReader<Adjustment> adjustmentJdbcReader(){
-        log.debug("dayAggregationJob-step1-adjustmentReader start");
         return new JdbcPagingItemReaderBuilder<Adjustment>()
                 .name("adjustmentReader")
                 .dataSource(dataSource)
@@ -113,7 +120,6 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
 
     @Bean
     public JdbcBatchItemWriter<Aggregation> writer(){
-        log.debug("dayAggregationJob-step1-writer start");
         return new JdbcBatchItemWriterBuilder<Aggregation>()
                 .dataSource(dataSource)
                 .sql("Insert into aggregation" +
