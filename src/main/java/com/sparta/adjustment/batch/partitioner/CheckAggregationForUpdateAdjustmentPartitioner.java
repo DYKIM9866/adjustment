@@ -1,28 +1,37 @@
 package com.sparta.adjustment.batch.partitioner;
 
-import com.sparta.adjustment.domain.adjustment.repository.AdjustmentRepository;
+import com.sparta.adjustment.domain.adjustment.repository.AggregationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class CheckHistoryForCreateAggregationPartitioner implements Partitioner {
+public class CheckAggregationForUpdateAdjustmentPartitioner implements Partitioner {
 
-    private final AdjustmentRepository adjustmentRepository;
+    private final AggregationRepository aggregationRepository;
+    private final String currentDate;
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
-        long min = adjustmentRepository.findMinId();
-        long max = adjustmentRepository.findMaxId();
+        LocalDate localDate = LocalDate.parse(currentDate, DateTimeFormatter.ISO_DATE);
+        LocalDateTime startTime = LocalDateTime.of(localDate, LocalTime.of(0,0,0));
+        LocalDateTime endTime = LocalDateTime.of(localDate, LocalTime.of(23,59,59));
 
-        long targetSize = (max-min) / gridSize + 1;
+        long min = aggregationRepository.getMinId(startTime, endTime);
+        long max = aggregationRepository.getMaxId(startTime, endTime);
+
+        long targetSize = (max - min) / gridSize - 1;
 
         //담기 시작
         Map<String, ExecutionContext> division = new HashMap<>();
-        int number = 0; //배치 번호
+        int number = 0;
         long start = min;
         long end = start + targetSize - 1;
 
@@ -30,7 +39,6 @@ public class CheckHistoryForCreateAggregationPartitioner implements Partitioner 
             ExecutionContext val = new ExecutionContext();
             division.put("partition" + number++, val);
 
-            //끝 번호보다 작을 경우 끝 번호 갱신
             if(end >= max) end = max;
 
             val.putLong("minId", start);

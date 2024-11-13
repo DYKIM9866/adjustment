@@ -3,11 +3,13 @@ package com.sparta.adjustment.batch;
 import com.sparta.adjustment.batch.faultTolerant.DayAggregationSkipPolicy;
 import com.sparta.adjustment.batch.listener.MyJobExecutionListener;
 import com.sparta.adjustment.batch.listener.MyStepExecutionListener;
+import com.sparta.adjustment.batch.partitioner.CheckAggregationForUpdateAdjustmentPartitioner;
 import com.sparta.adjustment.batch.partitioner.CheckHistoryForCreateAggregationPartitioner;
 import com.sparta.adjustment.batch.processor.CreateAggregationProcessor;
 import com.sparta.adjustment.domain.adjustment.Adjustment;
 import com.sparta.adjustment.domain.adjustment.Aggregation;
 import com.sparta.adjustment.domain.adjustment.repository.AdjustmentRepository;
+import com.sparta.adjustment.domain.adjustment.repository.AggregationRepository;
 import feign.RetryableException;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -51,89 +53,72 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
     private final JdbcTemplate jdbcTemplate;
     private final EntityManagerFactory entityManagerFactory;
     private final AdjustmentRepository adjustmentRepository;
-
+    private final AggregationRepository aggregationRepository;
 
     private int poolSize;
+
     @Value("${poolSize:5}")
     public void setPoolSize(int poolSize){
         this.poolSize = poolSize;
     }
-
     @Bean
-    public Job dayAggregationJob(JobRepository jobRepository,
-                                 Step step1Master,
-                                 Step checkAggregationForUpdateAdjustment){
-        return new JobBuilder("dayAggregationJob", jobRepository)
-                .start(step1Master)
-                .next(checkAggregationForUpdateAdjustment)
-                .listener(new MyJobExecutionListener())
-                .build();
-    }
-
-    @Bean
-    public Step step1Master(JobRepository jobRepository){
-        return new StepBuilder("step1.master", jobRepository)
-                .partitioner("step1", step1Partitioner())
-                .partitionHandler(step1PartitionHandler(jobRepository))
-                .listener(new MyStepExecutionListener())
-                .build();
-    }
-
-
-    @Bean
-    public Step checkHistoryForCreateAggregation(JobRepository jobRepository){
-        return new StepBuilder("step1", jobRepository)
-                .<Adjustment, Aggregation> chunk(100, getTransactionManager())
-                .reader(jdbcAdjustmentReader(null, null))
-                .processor(createAggregationProcessor(null))
-                .writer(aggregationWriter())
-                .faultTolerant()
-                .retry(RetryableException.class)
-                .retryLimit(3)
-                .skipPolicy(new DayAggregationSkipPolicy())
-                .build();
-    }
-
-    @Bean
-    public TaskExecutorPartitionHandler step1PartitionHandler(JobRepository jobRepository) {
-        TaskExecutorPartitionHandler partitionHandler
-                = new TaskExecutorPartitionHandler();
-        partitionHandler.setStep(checkHistoryForCreateAggregation(jobRepository));
-        partitionHandler.setTaskExecutor(executor());
-        partitionHandler.setGridSize(poolSize);
-
-        return partitionHandler;
-    }
-    @Bean
-    public Step checkAggregationForUpdateAdjustment(JobRepository jobRepository){
-        return new StepBuilder("step2", jobRepository)
-                .<Aggregation, Aggregation> chunk(100, getTransactionManager())
-                .reader(aggregationJpaReader(null))
-                .writer(adjustmentWriter())
-                .faultTolerant()
-                .retry(RetryableException.class)
-                .retryLimit(3)
-                .skipPolicy(new DayAggregationSkipPolicy())
-                .build();
-    }
-
-    @Bean
-    public TaskExecutor executor(){
+    public TaskExecutor batchTaskExecutor(){
         return new ThreadPoolTaskExecutorBuilder()
                 .corePoolSize(poolSize)
                 .maxPoolSize(poolSize)
                 .threadNamePrefix("partition-thread")
                 .build();
     }
-
     @Bean
-    public CheckHistoryForCreateAggregationPartitioner step1Partitioner(){
-        return new CheckHistoryForCreateAggregationPartitioner(adjustmentRepository);
+    public Job aggregationProcessingJob(JobRepository jobRepository,
+                                 Step createAggregationMasterStep,
+                                 Step updateAdjustmentMasterStep){
+        return new JobBuilder("aggregationProcessingJob", jobRepository)
+                .start(createAggregationMasterStep)
+                .next(updateAdjustmentMasterStep)
+                .listener(new MyJobExecutionListener())
+                .build();
     }
 
+    //step1
+    @Bean
+    public Step createAggregationMasterStep(JobRepository jobRepository){
+        return new StepBuilder("step1.master", jobRepository)
+                .partitioner("step1", createAggregationPartitioner())
+                .partitionHandler(createAggregationPartitionHandler(jobRepository))
+                .listener(new MyStepExecutionListener())
+                .build();
+    }
+    @Bean
+    public CheckHistoryForCreateAggregationPartitioner createAggregationPartitioner(){
+        return new CheckHistoryForCreateAggregationPartitioner(adjustmentRepository);
+    }
+    @Bean
+    public TaskExecutorPartitionHandler createAggregationPartitionHandler(JobRepository jobRepository) {
+        TaskExecutorPartitionHandler partitionHandler
+                = new TaskExecutorPartitionHandler();
+        partitionHandler.setStep(processHistoryForAggregation(jobRepository));
+        partitionHandler.setTaskExecutor(batchTaskExecutor());
+        partitionHandler.setGridSize(poolSize);
+
+        return partitionHandler;
+    }
+    @Bean
+    public Step processHistoryForAggregation(JobRepository jobRepository){
+        return new StepBuilder("step1", jobRepository)
+                .<Adjustment, Aggregation> chunk(100, getTransactionManager())
+                .reader(adjustmentItemReader(null, null))
+                .processor(aggregationItemProcessor(null))
+                .writer(aggregationDataWriter())
+                .faultTolerant()
+                .retry(RetryableException.class)
+                .retryLimit(3)
+                .skipPolicy(new DayAggregationSkipPolicy())
+                .build();
+    }
     @Bean
     @StepScope
-    public JdbcPagingItemReader<Adjustment> jdbcAdjustmentReader(
+    public JdbcPagingItemReader<Adjustment> adjustmentItemReader(
             @Value("#{stepExecutionContext[minId]}") Long minId,
             @Value("#{stepExecutionContext[maxId]}") Long maxId){
         Map<String, Object> params = new HashMap<>();
@@ -152,31 +137,14 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
                 .rowMapper(new BeanPropertyRowMapper<>(Adjustment.class))
                 .build();
     }
-
-    @Bean
-    public Job testStep1Job(JobRepository jobRepository){
-        return new JobBuilder("step1", jobRepository)
-                .start(checkHistoryForCreateAggregation((jobRepository)))
-                .build();
-    }
-
-    @Bean
-    public Job testStep2Job(JobRepository jobRepository){
-        return new JobBuilder("step2", jobRepository)
-                .start(checkAggregationForUpdateAdjustment((jobRepository)))
-                .build();
-    }
-
-
     @Bean
     @StepScope
-    public ItemProcessor<Adjustment, Aggregation> createAggregationProcessor(
+    public ItemProcessor<Adjustment, Aggregation> aggregationItemProcessor(
             @Value("#{jobParameters[referenceDate]}") String referenceDate){
         return new CreateAggregationProcessor(referenceDate, jdbcTemplate);
     }
-
     @Bean
-    public JdbcBatchItemWriter<Aggregation> aggregationWriter(){
+    public JdbcBatchItemWriter<Aggregation> aggregationDataWriter(){
         return new JdbcBatchItemWriterBuilder<Aggregation>()
                 .dataSource(dataSource)
                 .sql("Insert into aggregation" +
@@ -186,22 +154,68 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
                 .beanMapped().build();
     }
 
+    //step2
+    @Bean
+    public Step updateAdjustmentMasterStep(JobRepository jobRepository){
+        return new StepBuilder("step2.master", jobRepository)
+                .partitioner("step2", updateAdjustmentPartitioner(null))
+                .partitionHandler(updateAdjustmentPartitionHandler(jobRepository))
+                .listener(new MyStepExecutionListener())
+                .build();
+    }
     @Bean
     @StepScope
-    public JpaPagingItemReader<Aggregation> aggregationJpaReader(
+    public CheckAggregationForUpdateAdjustmentPartitioner updateAdjustmentPartitioner(
             @Value("#{jobParameters[currentDate]}") String currentDate){
+        return new CheckAggregationForUpdateAdjustmentPartitioner(aggregationRepository, currentDate);
+    }
+    @Bean
+    public TaskExecutorPartitionHandler updateAdjustmentPartitionHandler(JobRepository jobRepository) {
+        TaskExecutorPartitionHandler partitionHandler
+                = new TaskExecutorPartitionHandler();
+        partitionHandler.setStep(updateAdjustDataStep(jobRepository));
+        partitionHandler.setTaskExecutor(batchTaskExecutor());
+        partitionHandler.setGridSize(poolSize);
+
+        return partitionHandler;
+    }
+    @Bean
+    public Step updateAdjustDataStep(JobRepository jobRepository){
+        return new StepBuilder("step2", jobRepository)
+                .<Aggregation, Aggregation> chunk(100, getTransactionManager())
+                .reader(aggregationJpaItemReader(null, null, null))
+                .writer(adjustmentDataWriter())
+                .faultTolerant()
+                .retry(RetryableException.class)
+                .retryLimit(3)
+                .skipPolicy(new DayAggregationSkipPolicy())
+                .build();
+    }
+    @Bean
+    @StepScope
+    public JpaPagingItemReader<Aggregation> aggregationJpaItemReader(
+            @Value("#{stepExecutionContext[minId]}") Long minId,
+            @Value("#{stepExecutionContext[maxId]}") Long maxId,
+            @Value("#{jobParameters[currentDate]}") String currentDate){
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("minId", minId);
+        params.put("maxId", maxId);
+        params.put("date", currentDate);
+
         return new JpaPagingItemReaderBuilder<Aggregation>()
                 .name("aggregationJpaReader")
                 .pageSize(100)
                 .entityManagerFactory(entityManagerFactory)
-                .queryString("SELECT a FROM Aggregation a WHERE " +
-                        "FUNCTION('to_char', a.createdAt,'YYYY-MM-DD') = :date ")
-                .parameterValues(Collections.singletonMap("date",currentDate))
+                .queryString("SELECT a " +
+                        "FROM Aggregation a " +
+                        "WHERE a.id BETWEEN :minId AND :maxId " +
+                        "AND FUNCTION('to_char', a.createdAt,'YYYY-MM-DD') = :date ")
+                .parameterValues(params)
                 .build();
     }
-
     @Bean
-    public JdbcBatchItemWriter<Aggregation> adjustmentWriter(){
+    public JdbcBatchItemWriter<Aggregation> adjustmentDataWriter(){
         return new JdbcBatchItemWriterBuilder<Aggregation>()
                 .dataSource(dataSource)
                 .sql("UPDATE adjustment " +
@@ -209,7 +223,8 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
                         "    total_views = total_views + :views, " +
                         "    total_ad_views = total_ad_views + :adViews, " +
                         "    total_play_time = total_play_time + :viewingTime, " +
-                        "    total_amount = total_amount + :viewsAmount + :adAmount " +
+                        "    total_amount = total_amount + :viewsAmount + :adAmount, " +
+                        "    modified_at = now() " +
                         "WHERE id = :videoId"
                 ).beanMapped().build();
     }

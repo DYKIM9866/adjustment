@@ -98,4 +98,14 @@ public interface AggregationRepository extends JpaRepository<Aggregation, Long> 
     LIMIT 5
     """)
     List<AdjustmentCheckResponse> getViewingTimeTopVideo(Long userId);
+
+    @Query("SELECT MIN(id)" +
+            "FROM Aggregation " +
+            "WHERE createdAt BETWEEN :start AND :end")
+    Long getMinId(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT MAX(id)" +
+            "FROM Aggregation " +
+            "WHERE createdAt BETWEEN :start AND :end")
+    Long getMaxId(LocalDateTime start, LocalDateTime end);
 }
