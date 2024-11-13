@@ -37,6 +37,8 @@ public class CreateAggregationProcessor implements ItemProcessor<Adjustment, Agg
                 new BeanPropertyRowMapper<>(UserVideoCheckHistory.class)
         );
 
+        if(histories.isEmpty()) return null;
+
         long views = 0;
         long adViews = 0;
         long viewingTime = 0;
@@ -49,8 +51,6 @@ public class CreateAggregationProcessor implements ItemProcessor<Adjustment, Agg
         long viewsPrice = calViews(item.getTotalViews(), views);
         long adViewsPrice = calAd(item.getTotalAdViews(), adViews);
 
-//        log.info("views: {}, adViews: {}, viewingTime: {}, viewsPirce: {}, adViewsPrice: {}"
-//                ,views, adViews, viewingTime, viewsPrice, adViewsPrice);
 
         return  new Aggregation().builder()
                 .videoId(videoId)
