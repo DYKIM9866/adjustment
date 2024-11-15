@@ -22,15 +22,15 @@ public class UserVideoCheckHistory extends BaseTime {
     private Long videoId;
 
     @Column(nullable = false)
-    private Integer exitTiming;
+    private Long exitTiming;
 
     @Column(nullable = false)
-    private Integer adViews;
+    private Long adViews;
 
     @Column(nullable = false)
-    private Integer viewingTime;
+    private Long viewingTime;
 
-    public UserVideoCheckHistory(Long userId, Long videoId, Integer adViews, Integer viewingTime) {
+    public UserVideoCheckHistory(Long userId, Long videoId, Long adViews, Long viewingTime) {
         this.userId = userId;
         this.videoId = videoId;
         this.adViews = adViews;
