@@ -17,23 +17,34 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UserLogin {
+public class UserLoginComponent {
 
     private final List<SocialLogin> socialLogins;
     private final UserRepository userRepository;
     private final UserComponent userComponent;
 
-    public SocialUserResponse getUserInfo(SocialLoginRequest request) {
-        SocialLogin socialLogin = getLogin(request.getSocialType())
-                .orElseThrow(()-> new IllegalArgumentException("소셜 로그인/가입만을 허용하고 있습니다."));
+    public void getAuthorizeLogin(SocialLoginRequest request) {
+        //소셜 로그인 별 클래스 가져오기
+        SocialLogin socialLogin = getSocial(request.getSocialType())
+                .orElseThrow(()-> new NullPointerException("소셜 로그인/가입만을 허용하고 있습니다."));
 
+        socialLogin.getAccessToken(request.getCode());
+    }
+
+    public SocialUserResponse getUserInfo(SocialLoginRequest request) {
+        //소셜 로그인 별 클래스 가져오기
+        SocialLogin socialLogin = getSocial(request.getSocialType())
+                .orElseThrow(()-> new NullPointerException("소셜 로그인/가입만을 허용하고 있습니다."));
+
+        //인가코드
         SocialAuthResponse socialAuthResponse = socialLogin.getAccessToken(request.getCode());
+
         SocialUserResponse userInfo = socialLogin.getUserInfo(socialAuthResponse.getAccess_token());
 
         return userInfo;
     }
 
-    private Optional<SocialLogin> getLogin(SocialType socialType) {
+    private Optional<SocialLogin> getSocial(SocialType socialType) {
         for(SocialLogin login : socialLogins){
             if(socialType.equals(login.getServiceName())){
                 log.info("{}", login.getServiceName());
@@ -50,5 +61,12 @@ public class UserLogin {
     public void signUp(SocialUserResponse userInfo, SocialLoginRequest request) {
         User user = new User(userInfo.getEmail(), UserAuth.NORMAL, request.getSocialType());
         userRepository.save(user);
+    }
+
+    public String getSocialLogin(SocialType socialType) {
+        SocialLogin social = getSocial(socialType)
+                .orElseThrow(()-> new NullPointerException("소셜 로그인/가입만을 허용하고 있습니다."));
+
+        return social.getLogin();
     }
 }

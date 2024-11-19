@@ -42,9 +42,9 @@ public class VideoStreamingUseCase {
             userVideoCheckHistory = UserVideoCheckHistory.builder()
                     .userId(userId)
                     .videoId(videoId)
-                    .exitTiming(0)
-                    .adViews(0)
-                    .viewingTime(0)
+                    .exitTiming(0L)
+                    .adViews(0L)
+                    .viewingTime(0L)
                     .build();
         }
 
@@ -72,8 +72,8 @@ public class VideoStreamingUseCase {
         UserVideoHistory userVideoHistory
                 = historyComponent.getUserVideoHistory(new UserVideoId(request.getUserId(), videoId))
                     .orElse(null);
-        checkHistory.setViewingTime(request.getViewingTime());
-        checkHistory.setExitTiming(request.getExitTiming());
+        checkHistory.setViewingTime(Long.valueOf(request.getViewingTime()));
+        checkHistory.setExitTiming(Long.valueOf(request.getExitTiming()));
         if(userVideoHistory != null){
             userVideoHistory.setExitTiming(request.getExitTiming());
         }

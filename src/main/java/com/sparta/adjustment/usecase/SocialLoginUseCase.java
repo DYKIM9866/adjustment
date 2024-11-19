@@ -4,7 +4,8 @@ import com.sparta.adjustment.api.dto.response.LoginResponse;
 import com.sparta.adjustment.api.dto.request.SocialLoginRequest;
 import com.sparta.adjustment.api.dto.response.SocialUserResponse;
 import com.sparta.adjustment.domain.user.User;
-import com.sparta.adjustment.domain.user.component.UserLogin;
+import com.sparta.adjustment.domain.user.component.UserLoginComponent;
+import com.sparta.adjustment.domain.user.enums.SocialType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SocialLoginUseCase {
 
-    private final UserLogin userLogin;
+    private final UserLoginComponent userLogin;
 
     public LoginResponse socialLogin(SocialLoginRequest request) {
         //소셜 로그인에서 User정보 가져오기
@@ -37,4 +38,12 @@ public class SocialLoginUseCase {
     }
 
 
+    public String getLogin(SocialType socialType) {
+        String socialLogin = userLogin.getSocialLogin(socialType);
+        log.info(socialLogin);
+        return socialLogin;
+    }
+
+//    public String getAuthorizeLogin(SocialLoginRequest request) {
+//    }
 }

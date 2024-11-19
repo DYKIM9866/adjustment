@@ -35,6 +35,8 @@ public class GoogleLogin implements SocialLogin{
     private String googleRedirectUri;
     @Value("#{social['google.grant_type']}")
     private String googleGrantType;
+    @Value("#{social['google.login_url']}")
+    private String googleLoginUrl;
 
     @Override
     public SocialAuthResponse getAccessToken(String authCode) {
@@ -73,6 +75,16 @@ public class GoogleLogin implements SocialLogin{
                 .id(googleLoginResponse.getId())
                 .email(googleLoginResponse.getEmail())
                 .build();
+    }
+
+    @Override
+    public String getLogin() {
+        return googleLoginUrl + "?client_id=" +
+                googleAppKey +
+                "&redirect_uri=" +
+                googleRedirectUri +
+                "&response_type=code" +
+                "&scope=email profile";
     }
 
     @Override
