@@ -24,7 +24,13 @@ public class UserController {
     @GetMapping("/auth/login")
     public ResponseEntity<?> redirectToSocialLogin(@RequestParam String socialType){
         return ResponseEntity.status(HttpStatus.FOUND)
-                .header("Location", socialUsecase.getLogin(SocialType.valueOf(socialType))).build();
+                .header("Location", socialUsecase.getLoginPage(SocialType.valueOf(socialType))).build();
+    }
+
+    @PostMapping("/social-login")
+    public ResponseEntity<LoginResponse> socialLogin(@RequestBody @Valid SocialLoginRequest request){
+        return ResponseEntity.created(URI.create("/social-login"))
+                .body(socialUsecase.socialLogin(request));
     }
 
 //    @GetMapping("/auth/authorize")

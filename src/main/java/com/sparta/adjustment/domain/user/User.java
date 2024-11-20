@@ -4,11 +4,14 @@ import com.sparta.adjustment.domain.BaseTime;
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import com.sparta.adjustment.domain.user.enums.UserAuth;
 import jakarta.persistence.*;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
-@RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class User extends BaseTime {
 
     @Id
@@ -26,9 +29,4 @@ public class User extends BaseTime {
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
 
-    public User(String email, UserAuth userAuth, SocialType socialType) {
-        this.email = email;
-        this.socialType = socialType;
-        this.auth = userAuth;
-    }
 }

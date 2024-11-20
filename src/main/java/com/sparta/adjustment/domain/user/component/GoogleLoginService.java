@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GoogleLogin implements SocialLogin{
+public class GoogleLoginService implements SocialLogin{
 
     private final GoogleAuthApi googleAuthApi;
     private final GoogleUserApi googleUserApi;
@@ -37,6 +37,8 @@ public class GoogleLogin implements SocialLogin{
     private String googleGrantType;
     @Value("#{social['google.login_url']}")
     private String googleLoginUrl;
+    @Value("#{social['google.login.redirect-uri']}")
+    private String googleLoginRedirectUri;
 
     @Override
     public SocialAuthResponse getAccessToken(String authCode) {
