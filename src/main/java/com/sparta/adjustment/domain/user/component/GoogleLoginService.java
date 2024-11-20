@@ -80,7 +80,7 @@ public class GoogleLoginService implements SocialLogin{
     }
 
     @Override
-    public String getLogin() {
+    public String getLoginPage() {
         return googleLoginUrl + "?client_id=" +
                 googleAppKey +
                 "&redirect_uri=" +

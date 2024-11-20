@@ -1,10 +1,6 @@
 package com.sparta.adjustment.domain.user.component;
 
-import com.sparta.adjustment.api.dto.request.SocialLoginRequest;
-import com.sparta.adjustment.api.dto.response.SocialUserResponse;
-import com.sparta.adjustment.domain.user.User;
 import com.sparta.adjustment.domain.user.enums.SocialType;
-import com.sparta.adjustment.domain.user.enums.UserAuth;
 import com.sparta.adjustment.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +21,7 @@ public class UserLoginComponent {
         SocialLogin social = getSocialLoginService(socialType)
                 .orElseThrow(()-> new NullPointerException("소셜 로그인/가입만을 허용하고 있습니다."));
 
-        return social.getLogin();
+        return social.getLoginPage();
     }
 
     public Optional<SocialLogin> getSocialLoginService(SocialType socialType) {
