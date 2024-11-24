@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class VideoStreamingUseCase {
     private final static String WATCHED = "watched";
     private final static String VIEWS = "views";
+    private final static String VIDEO_LOG = "videoLog";
 
     private final VideoComponent videoComponent;
     private final VideoRedisComponent videoRedisComponent;
@@ -30,6 +31,13 @@ public class VideoStreamingUseCase {
     public VideoStreamingResponse watchVideo(Long videoId, Long userId) {
 
         Video video = videoComponent.getVideo(videoId);
+
+        //video log남기기
+        if(videoRedisComponent.getCached(VIDEO_LOG + ":" + videoId) == null){
+            videoRedisComponent.increaseCached(VIDEO_LOG + ":" + videoId);
+            videoComponent.saveDayLog(videoId);
+        }
+
         //30초 이내 캐시 확인
         Integer watchCached = (Integer) videoRedisComponent.getCached(WATCHED + videoId + userId);
 
