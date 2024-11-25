@@ -18,7 +18,7 @@ public class DayAggregationBatchScheduler {
     private final JobLauncher jobLauncher;
     private Job dayAggregationJob;
 
-    @Scheduled(cron = "")
+    @Scheduled(cron = "0 0 2 * * *")
     public void runDayAggregationAdjustment(){
         try {
             jobLauncher.run(dayAggregationJob,
