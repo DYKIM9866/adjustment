@@ -1,43 +1,47 @@
 package com.sparta.adjustment.batch.partitioner;
 
-import com.sparta.adjustment.domain.adjustment.repository.AdjustmentRepository;
+import com.sparta.adjustment.domain.video.repository.DayVideoLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
 public class CheckHistoryForCreateAggregationPartitioner implements Partitioner {
 
-    private final AdjustmentRepository adjustmentRepository;
+    private final DayVideoLogRepository dayVideoLogRepository;
+    private final LocalDateTime startTime;
+    private final LocalDateTime endTime;
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
-        long min = adjustmentRepository.findMinId();
-        long max = adjustmentRepository.findMaxId();
+        List<Long> logIds = dayVideoLogRepository.getLogIds(startTime, endTime);
 
-        long targetSize = (max-min) / gridSize + 1;
+        long size = logIds.size();
+        if(size == 0) return Collections.emptyMap();
+        long scope = (size+gridSize-1) / gridSize;
 
         //담기 시작
         Map<String, ExecutionContext> division = new HashMap<>();
         int number = 0; //배치 번호
-        long start = min;
-        long end = start + targetSize - 1;
 
-        while(start <= max){
+        int startIdx = 0;
+
+        while(startIdx < size){
+            int endIdx = (int) Math.min(size-1, startIdx + scope -1);
+
             ExecutionContext val = new ExecutionContext();
+            val.putLong("minId", logIds.get(startIdx));
+            val.putLong("maxId", logIds.get(endIdx));
+
             division.put("partition" + number++, val);
 
-            //끝 번호보다 작을 경우 끝 번호 갱신
-            if(end >= max) end = max;
-
-            val.putLong("minId", start);
-            val.putLong("maxId", end);
-
-            start += targetSize;
-            end += targetSize;
+            startIdx = endIdx + 1;
         }
 
         return division;

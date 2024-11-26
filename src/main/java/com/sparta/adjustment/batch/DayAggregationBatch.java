@@ -6,10 +6,11 @@ import com.sparta.adjustment.batch.listener.MyStepExecutionListener;
 import com.sparta.adjustment.batch.partitioner.CheckAggregationForUpdateAdjustmentPartitioner;
 import com.sparta.adjustment.batch.partitioner.CheckHistoryForCreateAggregationPartitioner;
 import com.sparta.adjustment.batch.processor.CreateAggregationProcessor;
-import com.sparta.adjustment.domain.adjustment.Adjustment;
 import com.sparta.adjustment.domain.adjustment.Aggregation;
 import com.sparta.adjustment.domain.adjustment.repository.AdjustmentRepository;
 import com.sparta.adjustment.domain.adjustment.repository.AggregationRepository;
+import com.sparta.adjustment.domain.video.DayVideoLog;
+import com.sparta.adjustment.domain.video.repository.DayVideoLogRepository;
 import feign.RetryableException;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,24 +24,21 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
-import org.springframework.batch.item.database.JdbcPagingItemReader;
 import org.springframework.batch.item.database.JpaPagingItemReader;
-import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
-import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.util.Collections;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,8 +50,10 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
     private final DataSource dataSource;
     private final JdbcTemplate jdbcTemplate;
     private final EntityManagerFactory entityManagerFactory;
-    private final AdjustmentRepository adjustmentRepository;
     private final AggregationRepository aggregationRepository;
+    private final AdjustmentRepository adjustmentRepository;
+    private final DayVideoLogRepository dayVideoLogRepository;
+    private final PlatformTransactionManager platformTransactionManager;
 
     private int poolSize;
 
@@ -84,14 +84,18 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
     @Bean
     public Step createAggregationMasterStep(JobRepository jobRepository){
         return new StepBuilder("step1.master", jobRepository)
-                .partitioner("step1", createAggregationPartitioner())
+                .partitioner("step1", createAggregationPartitioner(null))
                 .partitionHandler(createAggregationPartitionHandler(jobRepository))
                 .listener(new MyStepExecutionListener())
                 .build();
     }
     @Bean
-    public CheckHistoryForCreateAggregationPartitioner createAggregationPartitioner(){
-        return new CheckHistoryForCreateAggregationPartitioner(adjustmentRepository);
+    @StepScope
+    public CheckHistoryForCreateAggregationPartitioner createAggregationPartitioner(
+            @Value("#{jobParameters[referenceDate]}") String referenceDate){
+        LocalDateTime startTime = LocalDate.parse(referenceDate).atStartOfDay();
+        LocalDateTime endTime = startTime.plusDays(1);
+        return new CheckHistoryForCreateAggregationPartitioner(dayVideoLogRepository, startTime, endTime);
     }
     @Bean
     public TaskExecutorPartitionHandler createAggregationPartitionHandler(JobRepository jobRepository) {
@@ -106,8 +110,8 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
     @Bean
     public Step processHistoryForAggregation(JobRepository jobRepository){
         return new StepBuilder("step1", jobRepository)
-                .<Adjustment, Aggregation> chunk(100, getTransactionManager())
-                .reader(adjustmentItemReader(null, null))
+                .<DayVideoLog, Aggregation> chunk(100, platformTransactionManager)
+                .reader(dayVideoLogItemReader(null, null, null))
                 .processor(aggregationItemProcessor(null))
                 .writer(aggregationDataWriter())
                 .faultTolerant()
@@ -116,35 +120,72 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
                 .skipPolicy(new DayAggregationSkipPolicy())
                 .build();
     }
+
     @Bean
     @StepScope
-    public JdbcPagingItemReader<Adjustment> adjustmentItemReader(
+    public JpaPagingItemReader<DayVideoLog> dayVideoLogItemReader(
             @Value("#{stepExecutionContext[minId]}") Long minId,
-            @Value("#{stepExecutionContext[maxId]}") Long maxId){
+            @Value("#{stepExecutionContext[maxId]}") Long maxId,
+            @Value("#{jobParameters[referenceDate]}") String referenceDate){
+
+        LocalDateTime start = LocalDate.parse(referenceDate).atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
         Map<String, Object> params = new HashMap<>();
         params.put("minId", minId);
         params.put("maxId", maxId);
+        params.put("start", start);
+        params.put("end", end);
 
-        return new JdbcPagingItemReaderBuilder<Adjustment>()
-                .name("adjustmentReader")
-                .dataSource(dataSource)
+        return new JpaPagingItemReaderBuilder<DayVideoLog>()
+                .name("dayVideoLogItemReader")
                 .pageSize(100)
-                .selectClause("SELECT *")
-                .fromClause("FROM adjustment")
-                .whereClause("id BETWEEN :minId AND :maxId")
-                .sortKeys(Collections.singletonMap("id", Order.ASCENDING))
+                .entityManagerFactory(entityManagerFactory)
+                .queryString("SELECT d " +
+                        "FROM DayVideoLog d " +
+                        "WHERE d.videoId >= :minId " +
+                        "AND d.videoId <= :maxId " +
+                        "AND d.createdAt >= :start " +
+                        "AND d.createdAt < :end " +
+                        "ORDER BY d.id")
                 .parameterValues(params)
-                .rowMapper(new BeanPropertyRowMapper<>(Adjustment.class))
                 .build();
+
     }
+
+//    @Bean
+//    @StepScope
+//    public JdbcPagingItemReader<DayVideoLog> dayVideoLogItemReader(
+//            @Value("#{stepExecutionContext[minId]}") Long minId,
+//            @Value("#{stepExecutionContext[maxId]}") Long maxId,
+//            @Value("#{jobParameters[referenceDate]}") String referenceDate){
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("minId", minId);
+//        params.put("maxId", maxId);
+//        params.put("referenceDate", referenceDate);
+//
+//        return new JdbcPagingItemReaderBuilder<DayVideoLog>()
+//                .name("dayVideoLogItemReader")
+//                .dataSource(dataSource)
+//                .pageSize(100)
+//                .selectClause("SELECT *")
+//                .fromClause("FROM day_video_log")
+//                .whereClause("WHERE id BETWEEN :minId AND :maxId " +
+//                        "AND createdAt >= to_date(:referenceDate, 'YYYY-MM-DD') " +
+//                        "AND createdAt < to_date(:referenceDate, 'YYYY-MM-DD') + interval '1 day'")
+//                .sortKeys(Collections.singletonMap("id", Order.ASCENDING))
+//                .parameterValues(params)
+//                .rowMapper(new BeanPropertyRowMapper<>(DayVideoLog.class))
+//                .build();
+//    }
     @Bean
     @StepScope
-    public ItemProcessor<Adjustment, Aggregation> aggregationItemProcessor(
+    public ItemProcessor<DayVideoLog, Aggregation> aggregationItemProcessor(
             @Value("#{jobParameters[referenceDate]}") String referenceDate){
-        return new CreateAggregationProcessor(referenceDate, jdbcTemplate);
+        return new CreateAggregationProcessor(referenceDate, jdbcTemplate, adjustmentRepository);
     }
     @Bean
     public JdbcBatchItemWriter<Aggregation> aggregationDataWriter(){
+        System.out.println();
         return new JdbcBatchItemWriterBuilder<Aggregation>()
                 .dataSource(dataSource)
                 .sql("Insert into aggregation" +
@@ -182,7 +223,7 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
     @Bean
     public Step updateAdjustDataStep(JobRepository jobRepository){
         return new StepBuilder("step2", jobRepository)
-                .<Aggregation, Aggregation> chunk(100, getTransactionManager())
+                .<Aggregation, Aggregation> chunk(100, platformTransactionManager)
                 .reader(aggregationJpaItemReader(null, null, null))
                 .writer(adjustmentDataWriter())
                 .faultTolerant()
@@ -198,10 +239,13 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
             @Value("#{stepExecutionContext[maxId]}") Long maxId,
             @Value("#{jobParameters[currentDate]}") String currentDate){
 
+        LocalDateTime start = LocalDate.parse(currentDate).atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
         Map<String, Object> params = new HashMap<>();
         params.put("minId", minId);
         params.put("maxId", maxId);
-        params.put("date", currentDate);
+        params.put("start", start);
+        params.put("end", end);
 
         return new JpaPagingItemReaderBuilder<Aggregation>()
                 .name("aggregationJpaReader")
@@ -209,8 +253,9 @@ public class DayAggregationBatch extends DefaultBatchConfiguration {
                 .entityManagerFactory(entityManagerFactory)
                 .queryString("SELECT a " +
                         "FROM Aggregation a " +
-                        "WHERE a.id BETWEEN :minId AND :maxId " +
-                        "AND FUNCTION('to_char', a.createdAt,'YYYY-MM-DD') = :date ")
+                        "WHERE a.id >= :minId AND a.id <= :maxId " +
+                        "AND a.createdAt >= :start " +
+                        "AND a.createdAt < :end")
                 .parameterValues(params)
                 .build();
     }

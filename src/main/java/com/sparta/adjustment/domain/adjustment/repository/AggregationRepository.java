@@ -101,11 +101,13 @@ public interface AggregationRepository extends JpaRepository<Aggregation, Long> 
 
     @Query("SELECT MIN(id)" +
             "FROM Aggregation " +
-            "WHERE createdAt BETWEEN :start AND :end")
+            "WHERE createdAt >= :start " +
+            "AND createdAt < :end")
     Long getMinId(LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT MAX(id)" +
             "FROM Aggregation " +
-            "WHERE createdAt BETWEEN :start AND :end")
+            "WHERE createdAt >= :start " +
+            "AND createdAt < :end")
     Long getMaxId(LocalDateTime start, LocalDateTime end);
 }

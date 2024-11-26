@@ -2,16 +2,21 @@ package com.sparta.adjustment.batch.processor;
 
 import com.sparta.adjustment.domain.adjustment.Adjustment;
 import com.sparta.adjustment.domain.adjustment.Aggregation;
+import com.sparta.adjustment.domain.adjustment.repository.AdjustmentRepository;
 import com.sparta.adjustment.domain.history.UserVideoCheckHistory;
+import com.sparta.adjustment.domain.video.DayVideoLog;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
-public class CreateAggregationProcessor implements ItemProcessor<Adjustment, Aggregation> {
+public class CreateAggregationProcessor implements ItemProcessor<DayVideoLog, Aggregation> {
 
     private static final float[] VIEWS_GRADE_PRICE = {1, 1.1f, 1.3f, 1.5f};
     private static final float[] AD_VIEWS_GRADE_PRICE = {10, 12, 15, 20};
@@ -19,21 +24,29 @@ public class CreateAggregationProcessor implements ItemProcessor<Adjustment, Agg
 
     private final String referenceDate;
     private final JdbcTemplate jdbcTemplate;
+    private final AdjustmentRepository adjustmentRepository;
 
-    public CreateAggregationProcessor(String referenceDate, JdbcTemplate jdbcTemplate) {
+    public CreateAggregationProcessor(String referenceDate,
+                                      JdbcTemplate jdbcTemplate,
+                                      AdjustmentRepository adjustmentRepository) {
         this.referenceDate = referenceDate;
         this.jdbcTemplate = jdbcTemplate;
+        this.adjustmentRepository = adjustmentRepository;
     }
 
     @Override
-    public Aggregation process(Adjustment item) throws Exception {
+    public Aggregation process(DayVideoLog item) throws Exception {
 
-        Long videoId = item.getId();
+        Long videoId = item.getVideoId();
+        LocalDateTime start = LocalDate.parse(referenceDate).atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+
 
         List<UserVideoCheckHistory> histories = jdbcTemplate.query(
                 "SELECT * FROM user_video_check_history where video_id = ? " +
-                        "and to_char(created_at,'YYYY-MM-DD') = ?",
-                new Object[]{videoId, referenceDate},
+                        "and created_at >= ? " +
+                        "AND created_at < ?",
+                new Object[]{videoId, start, end},
                 new BeanPropertyRowMapper<>(UserVideoCheckHistory.class)
         );
 
@@ -48,8 +61,11 @@ public class CreateAggregationProcessor implements ItemProcessor<Adjustment, Agg
             viewingTime += history.getViewingTime();
         }
 
-        long viewsPrice = calViews(item.getTotalViews(), views);
-        long adViewsPrice = calAd(item.getTotalAdViews(), adViews);
+        Adjustment adjustment = adjustmentRepository.findById(videoId)
+                .orElseThrow(()->new EntityNotFoundException("해당 id의 정산데이터가 없습니다."));
+
+        long viewsPrice = calViews(adjustment.getTotalViews(), views);
+        long adViewsPrice = calAd(adjustment.getTotalAdViews(), adViews);
 
 
         return  new Aggregation().builder()

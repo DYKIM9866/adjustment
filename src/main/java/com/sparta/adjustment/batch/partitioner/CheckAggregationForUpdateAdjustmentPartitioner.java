@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,12 +23,17 @@ public class CheckAggregationForUpdateAdjustmentPartitioner implements Partition
     public Map<String, ExecutionContext> partition(int gridSize) {
         LocalDate localDate = LocalDate.parse(currentDate, DateTimeFormatter.ISO_DATE);
         LocalDateTime startTime = LocalDateTime.of(localDate, LocalTime.of(0,0,0));
-        LocalDateTime endTime = LocalDateTime.of(localDate, LocalTime.of(23,59,59));
+        LocalDateTime endTime = startTime.plusDays(1);
 
-        long min = aggregationRepository.getMinId(startTime, endTime);
-        long max = aggregationRepository.getMaxId(startTime, endTime);
+        Long min = aggregationRepository.getMinId(startTime, endTime);
+        Long max = aggregationRepository.getMaxId(startTime, endTime);
 
-        long targetSize = (max - min) / gridSize - 1;
+        if(min == null && max == null){
+            return Collections.emptyMap();
+        }
+
+        long range = max - min + 1;
+        long targetSize = Math.max(1, (range + gridSize - 1) / gridSize);
 
         //담기 시작
         Map<String, ExecutionContext> division = new HashMap<>();
@@ -39,13 +45,13 @@ public class CheckAggregationForUpdateAdjustmentPartitioner implements Partition
             ExecutionContext val = new ExecutionContext();
             division.put("partition" + number++, val);
 
-            if(end >= max) end = max;
+            if(end > max) end = max;
 
             val.putLong("minId", start);
             val.putLong("maxId", end);
 
-            start += targetSize;
-            end += targetSize;
+            start = end + 1; //다음 범위
+            end = start + targetSize - 1;
         }
 
         return division;
