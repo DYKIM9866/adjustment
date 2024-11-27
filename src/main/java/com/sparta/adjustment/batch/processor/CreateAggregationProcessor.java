@@ -10,9 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalField;
 import java.util.List;
 
 @Slf4j
@@ -40,7 +43,6 @@ public class CreateAggregationProcessor implements ItemProcessor<DayVideoLog, Ag
         Long videoId = item.getVideoId();
         LocalDateTime start = LocalDate.parse(referenceDate).atStartOfDay();
         LocalDateTime end = start.plusDays(1);
-
 
         List<UserVideoCheckHistory> histories = jdbcTemplate.query(
                 "SELECT * FROM user_video_check_history where video_id = ? " +
