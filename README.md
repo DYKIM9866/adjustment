@@ -52,8 +52,11 @@ adjustment
 - **통계 및 정산 기능**
   - Spring Batch 를 사용하여 일일 통계를 내고 그에 따른 정산 진행
 
-## 프로젝트 사용 가이드👨‍💻
-### 사용 스택 및 버전
+## 트러블 슈팅
+[트러블 슈팅 노션](https://www.notion.so/150960ca35e580e2ab49c9c2444910ba?pvs=4)
+
+## 👨‍💻 프로젝트 사용 가이드
+### 💻사용 스택 및 버전💻
 - Java 21
 - SpringBoot 3.3.4
 - PostgreSQL 13
@@ -70,27 +73,7 @@ docker-compose up -d --build
 ```
 
 ### API 명세서
-#### XX
-|메서드|요청 URL
-|-----|----------|
-|메서드|DD|
-
-| 메서드 | 설명 |요청 예시 | 응답 예시 |
-|-----|----------|----------|----------|
-
-
-
-## ‍💻기술 스택💻
-<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white"> 
-<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
-<br>
-<img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
-<img src="https://img.shields.io/badge/redis-FF4438?style=for-the-badge&logo=redis&logoColor=white">
-<br>
-<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> 
-<br>
-<img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> 
-<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> 
+[API 명세서 노션](https://www.notion.so/API-150960ca35e580049042fa320efbe8f3?pvs=4)
 
 
 
