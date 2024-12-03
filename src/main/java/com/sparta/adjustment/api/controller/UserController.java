@@ -1,7 +1,7 @@
 package com.sparta.adjustment.api.controller;
 
-import com.sparta.adjustment.api.dto.response.LoginResponse;
 import com.sparta.adjustment.api.dto.request.SocialLoginRequest;
+import com.sparta.adjustment.api.dto.response.LoginResponse;
 import com.sparta.adjustment.domain.user.enums.SocialType;
 import com.sparta.adjustment.usecase.SocialLoginUseCase;
 import jakarta.validation.Valid;

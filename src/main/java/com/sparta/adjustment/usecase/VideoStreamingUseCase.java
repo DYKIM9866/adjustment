@@ -39,7 +39,7 @@ public class VideoStreamingUseCase {
         }
 
         //30초 이내 캐시 확인
-        Integer watchCached = (Integer) videoRedisComponent.getCached(WATCHED + videoId + userId);
+        Object watchCached = videoRedisComponent.getCached(WATCHED + videoId + userId);
 
         //게시자 아니고 && 어뷰징 아니라면 조회수 증가
         UserVideoCheckHistory userVideoCheckHistory = null;
@@ -86,11 +86,11 @@ public class VideoStreamingUseCase {
             userVideoHistory.setExitTiming(request.getExitTiming());
         }
 
-        Integer cached = (Integer) videoRedisComponent.getCached(WATCHED + videoId + request.getUserId());
-        if(cached != null && cached > 1){
-            videoRedisComponent.decreaseCache(WATCHED + videoId + request.getUserId());
-        }else{
+        Object cached = videoRedisComponent.getCached(WATCHED + videoId + request.getUserId());
+        if(cached == null){
             videoRedisComponent.setCached(WATCHED + videoId + request.getUserId(), 1, 30);
+        }else{
+            videoRedisComponent.decreaseCache(WATCHED + videoId + request.getUserId());
         }
 
     }

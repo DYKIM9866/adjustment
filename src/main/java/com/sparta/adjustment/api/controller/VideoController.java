@@ -15,7 +15,7 @@ public class VideoController {
 
     private final VideoStreamingUseCase videoStreamingUseCase;
 
-    @GetMapping("/{videoId}")
+    @PostMapping("/{videoId}")
     public CommonApiResponse<VideoStreamingResponse> getVideo(@PathVariable Long videoId,
                                                               @RequestBody VideoStreamingRequest request){
         return CommonApiResponse.success(videoStreamingUseCase.watchVideo(videoId, request.getUserId()));
@@ -30,7 +30,7 @@ public class VideoController {
     public CommonApiResponse<AdVideoResponse> getAdVideo(@RequestParam String category){
         return CommonApiResponse.success(videoStreamingUseCase.getAdVideo(category));
     }
-    @PatchMapping("/ad/{videoId}/{userId}")
+    @PatchMapping("/ad/{videoId}")
     public void finishAdVideo(@PathVariable Long videoId,
                               @RequestBody VideoStreamingRequest request){
         videoStreamingUseCase.finishAdVideo(videoId, request);

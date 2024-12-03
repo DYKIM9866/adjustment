@@ -1,14 +1,9 @@
 package com.sparta.adjustment.usecase;
 
 import com.sparta.adjustment.api.dto.response.AdjustmentCheckResponse;
-import com.sparta.adjustment.domain.adjustment.Aggregation;
 import com.sparta.adjustment.domain.adjustment.service.AggregationComponent;
-import com.sparta.adjustment.domain.video.Video;
-import com.sparta.adjustment.domain.video.component.VideoComponent;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
